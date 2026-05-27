@@ -1,0 +1,7 @@
+# Esclude la cartella virtual environment dentro backend
+backend/myvenv/
+
+# Esclude tutte le cartelle __pycache__ ovunque si trovino
+**/__pycache__/
+
+.env
