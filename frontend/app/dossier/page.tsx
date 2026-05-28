@@ -82,7 +82,7 @@ export default function DossierPage() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className=" p-8 overflow-y-auto">
         {selectedId ? (
           <div className="space-y-6">
             <div className="flex items-center gap-3">
