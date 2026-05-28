@@ -83,6 +83,10 @@ class RAGService:
             if not section_number:
                 continue
 
+            art_start = re.search(r"#{1,3}\s*(?:Art(?:icolo|\.)?\s*)?\d+", content)
+            if art_start:
+                content = content[art_start.start():]
+
             # Article subsection
             sub_sections = re.split(r"\n(?=\d+\.\d+\s)", content)
 
@@ -125,19 +129,17 @@ class RAGService:
         # LOAD PDF
         pages = self.load_pdf(file_path)
 
-        # unisci testo pagine
-        full_text = "\n".join([p["text"] for p in pages])
-
-        # SPLIT ARTICLES
-        articles = self.split_by_articles(full_text)
+        # SPLIT ARTICLES per ogni pagina separatamente
+        all_articles = []
+        for p in pages:
+            articles = self.split_by_articles(p["text"])
+            all_articles.extend(articles)
 
         # SAVE ARTICLES
-        for idx, article_data in enumerate(articles):
-
+        for idx, article_data in enumerate(all_articles):
             content = article_data["content"]
             article_number = article_data["article"]
 
-            # embedding articolo intero
             embedding = self.embeddings.embed_query(content)
 
             chunk = Chunk(
@@ -145,7 +147,7 @@ class RAGService:
                 document_id=document_id,
                 content=content,
                 article=article_number,
-                page=1,  # miglioriamo dopo
+                page=1,
                 chunk_index=idx,
                 embedding=embedding,
             )
