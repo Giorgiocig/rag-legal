@@ -213,3 +213,20 @@ async def analyze_dossier(dossier_id: str, db=Depends(get_db)):
 
     result = dossier_analysis.analyze(dossier_id, db)
     return result
+
+
+@app.delete("/dossier/{dossier_id}/documents/{document_id}")
+async def delete_dossier_document(dossier_id: str, document_id: str, db=Depends(get_db)):
+    doc = db.query(Document).filter(
+        Document.id == document_id,
+        Document.dossier_id == dossier_id
+    ).first()
+    
+    if not doc:
+        raise HTTPException(status_code=404, detail="Documento non trovato")
+    
+    db.execute(text("DELETE FROM chunks WHERE document_id = :id"), {"id": document_id})
+    db.delete(doc)
+    db.commit()
+    
+    return {"message": "Documento eliminato"}
