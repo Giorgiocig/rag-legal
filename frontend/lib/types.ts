@@ -9,4 +9,11 @@ export interface DossierAnalysis {
   sezione_tribunale: string | null;
   totale_richiesto: string | null;
   domanda_riconvenzionale: string | null;
+  esito: string | null;
+  motivazione: string | null;
+  punti_forza_attore: string | null;
+  punti_debolezza_attore: string | null;
+  punti_forza_convenuto: string | null;
+  punti_debolezza_convenuto: string | null;
+  sintesi_strategica: string | null;
 }
