@@ -85,7 +85,7 @@ class RAGService:
 
             art_start = re.search(r"#{1,3}\s*(?:Art(?:icolo|\.)?\s*)?\d+", content)
             if art_start:
-                content = content[art_start.start():]
+                content = content[art_start.start() :]
 
             # Article subsection
             sub_sections = re.split(r"\n(?=\d+\.\d+\s)", content)
