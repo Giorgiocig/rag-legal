@@ -62,7 +62,9 @@ async def upload_pdf(file: UploadFile = File(...), db=Depends(get_db)):
     # controlla se esiste già un documento con lo stesso nome
     existing = db.query(Document).filter(Document.filename == file.filename).first()
     if existing:
-        db.execute(text("DELETE FROM chunks WHERE document_id = :id"), {"id": existing.id})
+        db.execute(
+            text("DELETE FROM chunks WHERE document_id = :id"), {"id": existing.id}
+        )
         db.delete(existing)
         db.commit()
 
@@ -121,14 +123,11 @@ async def query(request: QueryRequest, db=Depends(get_db)):
 # -------------------------
 @app.get("/documents")
 async def get_documents(db=Depends(get_db)):
-    documents = db.execute(
-        text("SELECT id, filename, created_at FROM documents")
-    ).fetchall()
-
+    docs = db.query(Document).filter(Document.dossier_id == None).all()
     return {
         "documents": [
             {"id": d.id, "name": d.filename, "uploadedAt": d.created_at}
-            for d in documents
+            for d in docs
         ]
     }
 
@@ -149,8 +148,6 @@ async def delete_document(document_id: str, db=Depends(get_db)):
 # -------------------------
 # DOSSIER
 # -------------------------
-
-
 @app.post("/dossier")
 async def create_dossier(request: DossierRequest, db=Depends(get_db)):
     dossier = Dossier(nome=request.nome)
