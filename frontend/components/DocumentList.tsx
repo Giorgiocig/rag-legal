@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText } from "lucide-react";
+import { FileText, Trash2 } from "lucide-react";
 
 interface Document {
   id: string;
@@ -10,16 +10,30 @@ interface Document {
 
 interface DossierDocumentListProps {
   documents: Document[];
+  dossierId: string;
+  onDeleted: () => void;
 }
 
 export default function DossierDocumentList({
   documents,
+  dossierId,
+  onDeleted,
 }: DossierDocumentListProps) {
   if (documents.length === 0) {
     return (
       <p className="text-xs text-muted-foreground">Nessun documento caricato</p>
     );
   }
+
+  const handleDelete = async (documentId: string) => {
+    await fetch(
+      `http://localhost:8000/dossier/${dossierId}/documents/${documentId}`,
+      {
+        method: "DELETE",
+      },
+    );
+    onDeleted();
+  };
 
   return (
     <div className="space-y-2">
@@ -33,6 +47,12 @@ export default function DossierDocumentList({
             <p className="text-xs font-medium truncate">{doc.filename}</p>
             <p className="text-[10px] text-zinc-400 mt-0.5">{doc.created_at}</p>
           </div>
+          <button
+            onClick={() => handleDelete(doc.id)}
+            className="text-zinc-400 hover:text-red-500 transition-colors"
+          >
+            <Trash2 size={14} />
+          </button>
         </div>
       ))}
     </div>

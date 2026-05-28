@@ -95,7 +95,11 @@ export default function DossierPage() {
                 onResult={setAnalysisResult}
               />
             </div>
-            <DossierDocumentList documents={documents} />
+            <DossierDocumentList
+              documents={documents}
+              dossierId={selectedId}
+              onDeleted={() => fetchDocuments(selectedId)}
+            />
             <AnalysisResult result={analysisResult} />
           </div>
         ) : (
