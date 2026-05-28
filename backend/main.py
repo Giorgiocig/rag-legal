@@ -59,6 +59,13 @@ def get_db():
 # -------------------------
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...), db=Depends(get_db)):
+    # controlla se esiste già un documento con lo stesso nome
+    existing = db.query(Document).filter(Document.filename == file.filename).first()
+    if existing:
+        db.execute(text("DELETE FROM chunks WHERE document_id = :id"), {"id": existing.id})
+        db.delete(existing)
+        db.commit()
+
     file_path = f"{UPLOAD_DIR}/{file.filename}"
 
     # 1. salva file su disco
@@ -72,7 +79,7 @@ async def upload_pdf(file: UploadFile = File(...), db=Depends(get_db)):
     db.commit()
     db.refresh(doc)
 
-    rag.index_dossier_document(file_path, db, doc.id)
+    rag.index_document(file_path, db, doc.id)
 
     return {"message": "Documento caricato e indicizzato", "document_id": doc.id}
 
