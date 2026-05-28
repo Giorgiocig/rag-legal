@@ -14,9 +14,10 @@ class DossierAnalysis:
                 (
                     "system",
                     """Sei un assistente legale. Dal seguente documento estrai queste informazioni in formato JSON:
-            - subjects: soggetti coinvolti e ruoli (attore, convenuto, avvocati, giudice)
-            - logistics: dati logistici (indirizzo, foro competente, sezione tribunale)
-            - petitum: somme richieste e domande riconvenzionali
+                    - subjects: soggetti coinvolti e ruoli (attore, convenuto, avvocati, giudice)
+                    - logistics: dati logistici (indirizzo, foro competente, sezione tribunale)
+                    - petitum: somme richieste e domande riconvenzionali
+                    - strategy: esito della causa, motivazione della decisione, punti di forza e debolezza di ogni parte, sintesi strategica
 
             Restituisci SOLO il JSON, niente altro. Se un campo non è presente nel documento usa null.""",
                 ),
@@ -29,9 +30,26 @@ class DossierAnalysis:
                 (
                     "system",
                     """Sei un assistente legale. Aggrega le informazioni dai documenti.
-                    IMPORTANTE: tutti i valori devono essere stringhe semplici, mai oggetti o array.
-                    Esempio corretto: {{"attore": "Immobiliare Roma Nord S.r.l."}}
-                    Esempio sbagliato: {{"attore": {{"nome": "...", "ruolo": "..."}}}}""",
+                        Restituisci SOLO i seguenti campi con esattamente questi nomi:
+                        - attore
+                        - convenuto
+                        - avvocato_attore
+                        - avvocato_convenuto
+                        - giudice
+                        - indirizzo
+                        - foro_competente
+                        - sezione_tribunale
+                        - totale_richiesto
+                        - domanda_riconvenzionale
+                        - esito
+                        - motivazione
+                        - punti_forza_attore
+                        - punti_debolezza_attore
+                        - punti_forza_convenuto
+                        - punti_debolezza_convenuto
+                        - sintesi_strategica
+
+                        Tutti i valori devono essere stringhe semplici. Se un campo non è presente usa null.""",
                 ),
                 ("human", "Informazioni estratte dai documenti:\n{partial_results}"),
             ]
