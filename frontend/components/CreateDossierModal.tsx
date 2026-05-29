@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, X, FileText } from "lucide-react";
 import { API_URL } from "@/lib/constants";
+import { toast } from "sonner";
+import { Progress } from "./ui/progress";
 
 interface CreateDossierModalProps {
   open: boolean;
@@ -27,6 +29,21 @@ export default function CreateDossierModal({
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [progress, setProgress] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startProgress = () => {
+    setProgress(0);
+    intervalRef.current = setInterval(() => {
+      setProgress((prev) => (prev < 90 ? prev + 5 : prev));
+    }, 500);
+  };
+
+  const stopProgress = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setProgress(100);
+    setTimeout(() => setProgress(0), 500);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -37,29 +54,40 @@ export default function CreateDossierModal({
   const handleSubmit = async () => {
     if (!nome.trim() || !file) return;
     setIsLoading(true);
+    startProgress();
 
-    // 1. crea dossier
-    const res = await fetch(`${API_URL}/dossier`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome }),
-    });
-    const data = await res.json();
-    const dossierId = data.dossier_id;
+    try {
+      const res = await fetch(`${API_URL}/dossier`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome }),
+      });
 
-    // 2. carica file
-    const formData = new FormData();
-    formData.append("file", file);
-    await fetch(`${API_URL}/dossier/${dossierId}/upload`, {
-      method: "POST",
-      body: formData,
-    });
+      if (!res.ok) throw new Error();
 
-    setIsLoading(false);
-    setNome("");
-    setFile(null);
-    onCreated();
-    onClose();
+      const data = await res.json();
+      const dossierId = data.dossier_id;
+
+      const formData = new FormData();
+      formData.append("file", file);
+      const uploadRes = await fetch(`${API_URL}/dossier/${dossierId}/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error();
+
+      stopProgress();
+      toast.success("Dossier creato con successo");
+      setNome("");
+      setFile(null);
+      onCreated();
+      onClose();
+    } catch {
+      toast.error("Errore durante la creazione del dossier");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -83,6 +111,7 @@ export default function CreateDossierModal({
             className="hidden"
             onChange={handleFileChange}
           />
+          {isLoading && <Progress value={progress} className="h-1" />}
 
           <Button
             variant="outline"
