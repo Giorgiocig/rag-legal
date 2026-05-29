@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 
 import { FileText, ChevronRight } from "lucide-react";
 import {
@@ -16,6 +16,8 @@ import {
 import UploadButton from "./UploadButton";
 import { cn } from "@/lib/utils";
 import { API_URL } from "@/lib/constants";
+import { useRouter } from "next/navigation";
+import { Button } from "./ui/button";
 
 export interface Document {
   id: string;
@@ -36,6 +38,7 @@ export default function DocumentSidebar({
   onSelect,
   onUploadComplete,
 }: DocumentSidebarProps) {
+  const router = useRouter();
   async function deleteDocument(id: string) {
     await fetch(`${API_URL}/documents/${id}`, {
       method: "DELETE",
@@ -44,6 +47,12 @@ export default function DocumentSidebar({
 
   return (
     <Sidebar collapsible="icon">
+      <Button
+        onClick={() => router.push("/")}
+        className="p-2 hover:bg-zinc-200 rounded-lg transition"
+      >
+        <ArrowLeft size={16} />
+      </Button>
       <SidebarHeader className="px-5 py-4 flex flex-row items-center justify-between">
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium group-data-[collapsible=icon]:hidden">
           Documenti
