@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { Dossier } from "@/lib/interfaces";
 import DossierList from "@/components/DossierList";
 import AddDocumentButton from "@/components/AddDocumentBotton";
@@ -19,6 +20,7 @@ interface Document {
 }
 
 export default function DossierPage() {
+  const router = useRouter();
   const [dossiers, setDossiers] = useState<Dossier[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -62,6 +64,12 @@ export default function DossierPage() {
       {/* Sidebar */}
       <aside className="w-72 border-r border-zinc-200 bg-zinc-50 flex flex-col">
         <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between">
+          <Button
+            onClick={() => router.push("/")}
+            className="p-2 hover:bg-zinc-200 rounded-lg transition"
+          >
+            <ArrowLeft size={16} />
+          </Button>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
             Dossier
           </p>
