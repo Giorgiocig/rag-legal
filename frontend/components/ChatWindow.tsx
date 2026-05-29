@@ -4,6 +4,7 @@ import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { useEffect, useRef, useState } from "react";
 import { API_URL } from "@/lib/constants";
+import { toast } from "sonner";
 
 interface ChatWindowProps {
   documentId: string | null;
@@ -28,40 +29,46 @@ export default function ChatWindow({ documentId }: ChatWindowProps) {
       ...prev,
       { role: "user", content: question, id: crypto.randomUUID() },
     ]);
-
     setIsLoading(true);
 
-    const response = await fetch(`${API_URL}/query`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, document_id: documentId }),
-    });
-
-    const reader = response.body!.getReader();
-    const decoder = new TextDecoder();
-    let assistantMessage = "";
-
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: "", id: crypto.randomUUID() },
-    ]);
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      assistantMessage += decoder.decode(value);
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1] = {
-          ...updated[updated.length - 1],
-          content: assistantMessage,
-        };
-        return updated;
+    try {
+      const response = await fetch(`${API_URL}/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, document_id: documentId }),
       });
-    }
 
-    setIsLoading(false);
+      if (!response.ok) throw new Error();
+
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = "";
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "", id: crypto.randomUUID() },
+      ]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        assistantMessage += decoder.decode(value);
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            ...updated[updated.length - 1],
+            content: assistantMessage,
+          };
+          return updated;
+        });
+      }
+    } catch {
+      toast.error("Errore durante la risposta del modello");
+      setMessages((prev) => prev.slice(0, -1));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
