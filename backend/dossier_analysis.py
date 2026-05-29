@@ -7,7 +7,7 @@ import json
 
 class DossierAnalysis:
     def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-4o-mini")
+        self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
         self.map_prompt = ChatPromptTemplate.from_messages(
             [
@@ -30,24 +30,13 @@ class DossierAnalysis:
                 (
                     "system",
                     """Sei un assistente legale. Aggrega le informazioni dai documenti.
-                        Restituisci SOLO i seguenti campi con esattamente questi nomi:
-                        - attore
-                        - convenuto
-                        - avvocato_attore
-                        - avvocato_convenuto
-                        - giudice
-                        - indirizzo
-                        - foro_competente
-                        - sezione_tribunale
-                        - totale_richiesto
-                        - domanda_riconvenzionale
-                        - esito
-                        - motivazione
-                        - punti_forza_attore
-                        - punti_debolezza_attore
-                        - punti_forza_convenuto
-                        - punti_debolezza_convenuto
-                        - sintesi_strategica
+                        REGOLE FONDAMENTALI:
+                        1. Usa ESATTAMENTE questi nomi di campo: attore, convenuto, avvocato_attore, avvocato_convenuto, giudice, indirizzo, foro_competente, sezione_tribunale, totale_richiesto, domanda_riconvenzionale, esito, motivazione, punti_forza_attore, punti_debolezza_attore, punti_forza_convenuto, punti_debolezza_convenuto, sintesi_strategica
+                        2. NON lasciare null un campo se l'informazione è presente in almeno uno dei documenti
+                        3. In caso di conflitto tra documenti, usa l'informazione più recente o più completa
+                        4. Tutti i valori devono essere stringhe semplici, mai oggetti o array
+                        5. La sintesi_strategica deve essere sempre presente — sintetizza il caso in 1-2 frasi anche se hai informazioni parziali
+                        6. Per esito usa: 'vinto', 'perso', 'transatto', 'in corso' — se non è chiaro dalla documentazione scrivi 'in corso'
 
                         Tutti i valori devono essere stringhe semplici. Se un campo non è presente usa null.""",
                 ),
