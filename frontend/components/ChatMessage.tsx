@@ -1,6 +1,5 @@
 "use client";
 
-import { UIMessage } from "ai";
 import { cn } from "@/lib/utils";
 import SourceBadge from "./SourceBadge";
 
@@ -21,28 +20,30 @@ interface ChatMessageProps {
 export default function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
 
-  // estrai fonti dal testo se presenti
-
   const parts_split = message.content.split("###SOURCES###");
   let displayText = parts_split[0];
-  displayText = displayText.replace(/ARTICOLI_USATI:[\d,]+/g, "").trim();
+  displayText = displayText.replace(/ARTICOLI_USATI:[\d,\s]+/g, "").trim();
   const sources: Source[] = parts_split[1] ? JSON.parse(parts_split[1]) : [];
 
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
-      <div className={cn("max-w-[75%] space-y-2")}>
-        {/* Bubble utente / testo libero assistente */}
+      <div className="max-w-[75%] space-y-2">
         {isUser ? (
-          <div className="bg-zinc-900 text-white text-sm px-4 py-2.5 rounded-2xl rounded-br-sm">
+          <div
+            style={{ backgroundColor: "var(--color-accent)" }}
+            className="text-white text-base px-5 py-3 rounded-2xl rounded-br-sm font-body"
+          >
             {displayText}
           </div>
         ) : (
-          <div className="text-sm text-zinc-800 leading-relaxed">
+          <div
+            style={{ color: "var(--color-ink)" }}
+            className="text-base leading-relaxed font-body"
+          >
             {displayText}
           </div>
         )}
 
-        {/* Fonti */}
         {sources.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {sources.map((s, i) => (

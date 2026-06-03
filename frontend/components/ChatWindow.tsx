@@ -80,15 +80,27 @@ export default function ChatWindow({ documentId }: ChatWindowProps) {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-screen flex-1">
+    <div
+      className="flex flex-col h-screen flex-1"
+      style={{ backgroundColor: "var(--color-bg)" }}
+    >
       {/* Messaggi */}
-      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
+      <div className="flex-1 overflow-y-auto px-8 py-10 space-y-8">
         {messages.length === 0 && (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-full gap-3">
+            <p
+              className="text-lg font-display font-semibold"
+              style={{ color: "var(--color-ink)" }}
+            >
+              {documentId ? "Analizza il documento" : "Seleziona un documento"}
+            </p>
+            <p
+              className="text-sm font-body"
+              style={{ color: "var(--color-muted)" }}
+            >
               {documentId
-                ? "Fai una domanda sul documento."
-                : "Seleziona un documento per iniziare."}
+                ? "Fai una domanda sul contratto selezionato."
+                : "Scegli un contratto dalla sidebar per iniziare."}
             </p>
           </div>
         )}
@@ -98,17 +110,25 @@ export default function ChatWindow({ documentId }: ChatWindowProps) {
         ))}
 
         {isLoading && (
-          <div className="flex gap-1 px-1">
-            <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:0ms]" />
-            <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:150ms]" />
-            <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:300ms]" />
+          <div className="flex gap-1.5 px-1">
+            <span
+              className="w-2 h-2 rounded-full animate-bounce [animation-delay:0ms]"
+              style={{ backgroundColor: "var(--color-accent)" }}
+            />
+            <span
+              className="w-2 h-2 rounded-full animate-bounce [animation-delay:150ms]"
+              style={{ backgroundColor: "var(--color-accent)" }}
+            />
+            <span
+              className="w-2 h-2 rounded-full animate-bounce [animation-delay:300ms]"
+              style={{ backgroundColor: "var(--color-accent)" }}
+            />
           </div>
         )}
 
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <ChatInput
         input={input}
         onChange={handleInputChange}

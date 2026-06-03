@@ -28,8 +28,11 @@ export default function ChatInput({
   };
 
   return (
-    <div className="px-6 py-4 border-t border-zinc-200">
-      <form onSubmit={onSubmit} className="flex items-end gap-2">
+    <div
+      className="px-8 py-5"
+      style={{ borderTop: "1px solid var(--color-border)" }}
+    >
+      <form onSubmit={onSubmit} className="flex items-end gap-3">
         <Textarea
           value={input}
           onChange={onChange}
@@ -39,18 +42,27 @@ export default function ChatInput({
           }
           disabled={disabled || isLoading}
           rows={1}
-          className="resize-none min-h-[42px] max-h-[200px] text-sm"
+          className="resize-none min-h-[48px] max-h-[200px] text-base font-body rounded-xl"
+          style={{
+            backgroundColor: "#FFFFFF",
+            border: "1px solid var(--color-border)",
+            color: "var(--color-ink)",
+          }}
         />
         <Button
           type="submit"
           size="icon"
           disabled={disabled || isLoading || !input.trim()}
-          className="shrink-0 bg-zinc-900 hover:bg-zinc-700"
+          className="shrink-0 w-12 h-12 rounded-xl"
+          style={{ backgroundColor: "var(--color-accent)" }}
         >
-          <ArrowUp size={16} />
+          <ArrowUp size={18} />
         </Button>
       </form>
-      <p className="text-[10px] text-muted-foreground text-center mt-2">
+      <p
+        className="text-xs text-center mt-2 font-body"
+        style={{ color: "var(--color-muted)" }}
+      >
         Invio per inviare · Shift+Invio per andare a capo
       </p>
     </div>
