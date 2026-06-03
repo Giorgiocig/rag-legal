@@ -23,15 +23,12 @@ class RAGService:
         self.llm = ChatOpenAI(model="gpt-4o-mini")
         prompt = ChatPromptTemplate.from_messages(
             [
-                (
-                    "system",
-                    """Sei un assistente legale. Rispondi basandoti SOLO sul contesto fornito.
-        Alla fine della risposta aggiungi SEMPRE questa riga con i numeri degli articoli del contesto che hai usato per rispondere:
-        ARTICOLI_USATI:X
-        Esempio: se hai usato solo l'articolo 7 scrivi ARTICOLI_USATI:7
-        Esempio: se hai usato articoli 2 e 5 scrivi ARTICOLI_USATI:2,5
-        NON inventare articoli non presenti nel contesto.""",
-                ),
+                ("system", """Sei un assistente legale. Rispondi basandoti SOLO sul contesto fornito.
+                Il contesto può contenere un articolo principale e i suoi sotto-articoli — usali TUTTI per rispondere.
+                Alla fine della risposta aggiungi SEMPRE questa riga con i numeri degli articoli del contesto che hai usato per rispondere:
+                ARTICOLI_USATI:X
+                Esempio: se hai usato articolo 2 e sotto-articoli 2.1, 2.2 scrivi ARTICOLI_USATI:2,2.1,2.2
+                NON inventare articoli non presenti nel contesto."""),
                 ("human", "Contesto:\n{context}\n\nDomanda: {question}"),
             ]
         )
@@ -157,7 +154,7 @@ class RAGService:
         db.commit()
 
     def extract_article_number(self, query: str):
-        match = re.search(r"art(?:icolo|\.)?\s*(\d+)", query, re.IGNORECASE)
+        match = re.search(r"art(?:icolo|\.)?\s*(\d+(?:\.\d+)?)", query, re.IGNORECASE)
 
         if match:
             return match.group(1)
@@ -170,14 +167,20 @@ class RAGService:
 
         if article_number:
             sql = text("""
-                SELECT content, page, article
-                FROM chunks
-                WHERE article = :article AND document_id = :document_id
-                LIMIT 5;
-            """)
-            results = db.execute(
-                sql, {"article": article_number, "document_id": document_id}
-            ).fetchall()
+            SELECT content, page, article
+            FROM chunks
+            WHERE document_id = :document_id
+            AND (
+                article = :article
+                OR article LIKE :sub_article
+            )
+            LIMIT 10;
+        """)
+        results = db.execute(sql, {
+            "article": article_number,
+            "document_id": document_id,
+            "sub_article": f"{article_number}.%"
+        }).fetchall()
 
         if len(results) == 0:
             query_embedding = self.embeddings.embed_query(question)
