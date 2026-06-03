@@ -12,14 +12,21 @@ class DossierAnalysis:
         self.map_prompt = ChatPromptTemplate.from_messages(
             [
                 (
-                    "system",
-                    """Sei un assistente legale. Dal seguente documento estrai queste informazioni in formato JSON:
+                   "system", """Sei un assistente legale. Dal seguente documento estrai queste informazioni in formato JSON:
                     - subjects: soggetti coinvolti e ruoli (attore, convenuto, avvocati, giudice)
                     - logistics: dati logistici (indirizzo, foro competente, sezione tribunale)
                     - petitum: somme richieste e domande riconvenzionali
-                    - strategy: esito della causa, motivazione della decisione, punti di forza e debolezza di ogni parte, sintesi strategica
+                    - strategy: 
+                    - esito della causa (vinto/perso/transatto/in corso)
+                    - motivazione della decisione
+                    - punti di forza dell'attore (argomenti, prove, elementi favorevoli)
+                    - punti di debolezza dell'attore
+                    - punti di forza del convenuto
+                    - punti di debolezza del convenuto
+                    - sintesi strategica in 1-2 frasi
 
-            Restituisci SOLO il JSON, niente altro. Se un campo non è presente nel documento usa null.""",
+                    IMPORTANTE: se un'informazione è presente nel documento NON lasciare null.
+                    Restituisci SOLO il JSON, niente altro.""",
                 ),
                 ("human", "Documento:\n{document}"),
             ]
