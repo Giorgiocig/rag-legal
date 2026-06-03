@@ -167,20 +167,20 @@ class RAGService:
 
         if article_number:
             sql = text("""
-            SELECT content, page, article
-            FROM chunks
-            WHERE document_id = :document_id
-            AND (
-                article = :article
-                OR article LIKE :sub_article
-            )
-            LIMIT 10;
-        """)
-        results = db.execute(sql, {
-            "article": article_number,
-            "document_id": document_id,
-            "sub_article": f"{article_number}.%"
-        }).fetchall()
+                SELECT content, page, article
+                FROM chunks
+                WHERE document_id = :document_id
+                AND (
+                    article = :article
+                    OR article LIKE :sub_article
+                )
+                LIMIT 10;
+            """)
+            results = db.execute(sql, {
+                "article": article_number,
+                "document_id": document_id,
+                "sub_article": f"{article_number}.%"
+            }).fetchall()
 
         if len(results) == 0:
             query_embedding = self.embeddings.embed_query(question)
