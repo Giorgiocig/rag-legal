@@ -18,53 +18,64 @@ export default function AddDocumentButton({
 }: AddDocumentButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentFile, setCurrentFile] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startProgress = () => {
-    setProgress(0);
-    intervalRef.current = setInterval(() => {
-      setProgress((prev) => (prev < 90 ? prev + 5 : prev));
-    }, 500);
-  };
+  const uploadFile = async (file: File): Promise<boolean> => {
+    const formData = new FormData();
+    formData.append("file", file);
 
-  const stopProgress = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    setProgress(100);
-    setTimeout(() => setProgress(0), 500);
+    const res = await fetch(`${API_URL}/dossier/${dossierId}/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    return res.ok;
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (!file.name.endsWith(".pdf")) {
+    const invalidFiles = files.filter((f) => !f.name.endsWith(".pdf"));
+    if (invalidFiles.length > 0) {
       toast.error("Solo file PDF sono supportati");
       return;
     }
 
     setIsLoading(true);
-    startProgress();
+    setProgress(0);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+    let completed = 0;
+    let failed = 0;
 
-      const res = await fetch(`${API_URL}/dossier/${dossierId}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error();
-
-      stopProgress();
-      toast.success("Documento aggiunto al dossier");
-      onUploaded();
-    } catch {
-      toast.error("Errore durante il caricamento del documento");
-    } finally {
-      setIsLoading(false);
+    for (const file of files) {
+      setCurrentFile(file.name);
+      try {
+        const ok = await uploadFile(file);
+        if (ok) {
+          completed++;
+        } else {
+          failed++;
+        }
+      } catch {
+        failed++;
+      }
+      setProgress(Math.round(((completed + failed) / files.length) * 100));
     }
+
+    setIsLoading(false);
+    setCurrentFile("");
+
+    if (failed === 0) {
+      toast.success(
+        `${completed} documento${completed > 1 ? "i" : ""} caricato${completed > 1 ? "i" : ""} con successo`,
+      );
+    } else {
+      toast.warning(`${completed} caricati, ${failed} falliti`);
+    }
+
+    onUploaded();
   };
 
   return (
@@ -73,6 +84,7 @@ export default function AddDocumentButton({
         ref={inputRef}
         type="file"
         accept=".pdf"
+        multiple
         className="hidden"
         onChange={handleUpload}
       />
@@ -85,12 +97,12 @@ export default function AddDocumentButton({
         {isLoading ? (
           <>
             <Loader2 size={14} className="animate-spin mr-2" />
-            Caricamento...
+            {currentFile ? `Caricamento ${currentFile}...` : "Caricamento..."}
           </>
         ) : (
           <>
             <Upload size={14} className="mr-2" />
-            Aggiungi documento
+            Aggiungi documenti
           </>
         )}
       </Button>
